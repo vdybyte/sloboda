@@ -2,24 +2,41 @@ name: build
 
 on:
   push:
-  pull_request:
+    branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 25
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
       - name: Build
         run: |
           chmod +x ./gradlew
-          ./gradlew build
-      - uses: actions/upload-artifact@v4
+          set -o pipefail
+          ./gradlew build --stacktrace 2>&1 | tee build.log
+      - name: Save build log on failure
+        if: failure()
+        run: |
+          grep -E "error:|warning:|What went wrong|^> " -A2 build.log | head -40 | while IFS= read -r l; do echo "::error::$l"; done || true
+          mkdir -p /tmp/log && cp build.log /tmp/log/
+          git config user.name "build-bot"
+          git config user.email "build-bot@users.noreply.github.com"
+          git checkout --orphan build-log
+          git rm -rf --cached . > /dev/null
+          cp /tmp/log/build.log build.log
+          git add -f build.log
+          git commit -m "build log ${GITHUB_SHA}"
+          git push -f origin build-log
+      - uses: actions/upload-artifact@v5
         with:
           name: sloboda-jar
           path: build/libs/*.jar
