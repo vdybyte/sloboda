@@ -36,7 +36,7 @@ jobs:
         run: |
           mkdir -p run-smoke
           echo "eula=true" > run-smoke/eula.txt
-          printf "online-mode=false\nspawn-protection=0\nmax-tick-time=20000\n" > run-smoke/server.properties
+          printf "online-mode=false\nspawn-protection=0\nmax-tick-time=20000\npause-when-empty-seconds=100000\n" > run-smoke/server.properties
           ( sleep 420; for i in 1 2 3; do for p in $(jps -l | grep -viE "gradle|jps" | cut -d" " -f1); do jstack $p >> jstack.txt 2>&1; done; sleep 20; done ) &
           set -o pipefail
           timeout 600 ./gradlew runSmoke --console=plain 2>&1 | tee smoke.log || true
