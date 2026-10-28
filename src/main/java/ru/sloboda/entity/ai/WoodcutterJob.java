@@ -2,7 +2,6 @@ package ru.sloboda.entity.ai;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -203,7 +202,7 @@ public class WoodcutterJob extends Job {
             }
         }
         if (!leaves) return List.of();
-        logs.sort(Comparator.comparingInt(BlockPos::getY).reversed());
+        logs.sort((a, b) -> Integer.compare(b.getY(), a.getY()));
         return logs;
     }
 

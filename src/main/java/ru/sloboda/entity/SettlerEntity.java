@@ -192,7 +192,10 @@ public class SettlerEntity extends PathfinderMob {
         this.profession = Profession.byId(input.getStringOr("Profession", "none"));
         this.givenName = input.getStringOr("GivenName", "Поселенец");
         this.colonyId = input.read("Colony", UUIDUtil.CODEC).orElse(null);
-        this.inventory.readFromItemList(input.listOrEmpty("Inventory", ItemStack.CODEC));
+        this.inventory.clearContent();
+        for (ItemStack stack : input.listOrEmpty("Inventory", ItemStack.CODEC)) {
+            this.inventory.addItem(stack);
+        }
         this.job = null;
     }
 }
