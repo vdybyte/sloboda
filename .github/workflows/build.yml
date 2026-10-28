@@ -36,9 +36,10 @@ jobs:
         run: |
           mkdir -p run-smoke
           echo "eula=true" > run-smoke/eula.txt
-          printf "online-mode=false\nspawn-protection=0\n" > run-smoke/server.properties
+          printf "online-mode=false\nspawn-protection=0\nmax-tick-time=20000\n" > run-smoke/server.properties
+          ( sleep 420; for i in 1 2 3; do for p in $(jps -l | grep -viE "gradle|jps" | cut -d" " -f1); do jstack $p >> jstack.txt 2>&1; done; sleep 20; done ) &
           set -o pipefail
-          timeout 1200 ./gradlew runSmoke --console=plain 2>&1 | tee smoke.log || true
+          timeout 600 ./gradlew runSmoke --console=plain 2>&1 | tee smoke.log || true
           if ! grep -q "SLOBODA SMOKETEST PASSED" smoke.log; then
             echo "::error::Smoke test did not pass"
             exit 1
@@ -54,6 +55,7 @@ jobs:
           mkdir -p /tmp/log
           cp build.log /tmp/log/ 2>/dev/null || true
           cp smoke.log /tmp/log/ 2>/dev/null || true
+          cp jstack.txt /tmp/log/ 2>/dev/null || true
           cp run-smoke/logs/latest.log /tmp/log/server-latest.log 2>/dev/null || true
           cp -r run-smoke/crash-reports /tmp/log/ 2>/dev/null || true
           git config user.name "build-bot"
