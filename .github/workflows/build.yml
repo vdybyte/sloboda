@@ -18,25 +18,50 @@ jobs:
           distribution: temurin
           java-version: 25
       - uses: gradle/actions/setup-gradle@v5
+
       - name: Build
         run: |
           chmod +x ./gradlew
           set -o pipefail
           ./gradlew build --stacktrace 2>&1 | tee build.log
-      - name: Save build log on failure
-        if: failure()
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: sloboda-jar
+          path: |
+            build/libs/*.jar
+            !build/libs/*-sources.jar
+
+      - name: Smoke test (dedicated server 26.3 + mod)
         run: |
-          grep -E "error:|warning:|What went wrong|^> " -A2 build.log | head -40 | while IFS= read -r l; do echo "::error::$l"; done || true
-          mkdir -p /tmp/log && cp build.log /tmp/log/
+          mkdir -p run-smoke
+          echo "eula=true" > run-smoke/eula.txt
+          printf "online-mode=false\nspawn-protection=0\n" > run-smoke/server.properties
+          set -o pipefail
+          timeout 1200 ./gradlew runSmoke --console=plain 2>&1 | tee smoke.log || true
+          if ! grep -q "SLOBODA SMOKETEST PASSED" smoke.log; then
+            echo "::error::Smoke test did not pass"
+            exit 1
+          fi
+          if grep -nE "(ERROR|Exception)" smoke.log | grep -i "sloboda"; then
+            echo "::error::Errors mentioning sloboda found in server log"
+            exit 1
+          fi
+
+      - name: Publish logs
+        if: always()
+        run: |
+          mkdir -p /tmp/log
+          cp build.log /tmp/log/ 2>/dev/null || true
+          cp smoke.log /tmp/log/ 2>/dev/null || true
+          cp run-smoke/logs/latest.log /tmp/log/server-latest.log 2>/dev/null || true
+          cp -r run-smoke/crash-reports /tmp/log/ 2>/dev/null || true
           git config user.name "build-bot"
           git config user.email "build-bot@users.noreply.github.com"
           git checkout --orphan build-log
           git rm -rf --cached . > /dev/null
-          cp /tmp/log/build.log build.log
-          git add -f build.log
-          git commit -m "build log ${GITHUB_SHA}"
+          git clean -fdx -e /tmp > /dev/null || true
+          cp -r /tmp/log/. .
+          git add -f -A .
+          git commit -m "logs for ${GITHUB_SHA}"
           git push -f origin build-log
-      - uses: actions/upload-artifact@v5
-        with:
-          name: sloboda-jar
-          path: build/libs/*.jar

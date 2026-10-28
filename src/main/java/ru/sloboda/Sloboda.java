@@ -32,6 +32,10 @@ public final class Sloboda implements ModInitializer {
 
         ServerTickEvents.END_SERVER_TICK.register(ColonyTicker::onServerTick);
 
+        if (Boolean.getBoolean("sloboda.smoketest")) {
+            SmokeTest.register();
+        }
+
         LOGGER.info("Слобода загружена");
     }
 }

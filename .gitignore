@@ -8,3 +8,4 @@ run/
 *.iws
 .vscode/
 bin/
+run-smoke/

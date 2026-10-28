@@ -19,6 +19,17 @@ loom {
             sourceSet sourceSets.client
         }
     }
+
+    runs {
+        // Автотест на выделенном сервере: ./gradlew runSmoke
+        smoke {
+            server()
+            name "Smoke Test Server"
+            vmArg "-Dsloboda.smoketest=true"
+            programArg "--nogui"
+            runDir "run-smoke"
+        }
+    }
 }
 
 dependencies {
