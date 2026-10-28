@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "sloboda",
+  "version": "${version}",
+  "name": "Sloboda",
+  "description": "Колонии для Fabric: основывай слободу, размечай зоны, а поселенцы сами рубят лес, возят грузы и строят избы.",
+  "authors": ["MinZ"],
+  "license": "MIT",
+  "icon": "assets/sloboda/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["ru.sloboda.Sloboda"],
+    "client": ["ru.sloboda.client.SlobodaClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.0",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}

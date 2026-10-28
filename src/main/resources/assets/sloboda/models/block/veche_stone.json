@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "side": "sloboda:block/veche_stone_side",
+    "top": "sloboda:block/veche_stone_top",
+    "bottom": "sloboda:block/veche_stone_bottom"
+  }
+}
